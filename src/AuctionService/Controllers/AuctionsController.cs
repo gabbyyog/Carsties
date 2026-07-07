@@ -26,15 +26,22 @@ namespace AuctionService.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<AuctionDto>>> GetAllAuction()
+        public async Task<ActionResult<List<AuctionDto>>> GetAllAuction(string date)
         {
-            var auctions = await _context.Auctions
+            var query = _context.Auctions
                 .OrderBy(x => x.Item.Make)
-                .AsNoTracking()
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(date))
+            {
+                var dateTime = DateTime.Parse(date).ToUniversalTime();
+
+                query = query.Where(x => x.UpdatedAt > dateTime);
+            }
+
+            return await query
                 .ProjectTo<AuctionDto>(_mapper.ConfigurationProvider)
                 .ToListAsync();
-
-            return auctions;
         }
 
         [HttpGet("{id}")]
@@ -88,7 +95,7 @@ namespace AuctionService.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<AuctionDto>> DeleteAuction(Guid id)
         {
-            var auction =await _context.Auctions.FindAsync(id);
+            var auction = await _context.Auctions.FindAsync(id);
 
             if (auction == null) return NotFound();
 
@@ -96,7 +103,7 @@ namespace AuctionService.Controllers
 
             var result = await _context.SaveChangesAsync() > 0;
 
-            if(!result) return BadRequest("Could not update DB");
+            if (!result) return BadRequest("Could not update DB");
 
             return Ok();
         }

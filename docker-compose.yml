@@ -8,6 +8,15 @@ services:
     ports:
       - "5434:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-volumes:
-  postgres_data:
+      - /var/lib/postgresql/data
+  
+  mongodb:
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: mongopw
+    ports:
+      - "27017:27017"
+    volumes:
+      - /var/lib/mongodb/data
+
